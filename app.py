@@ -38,7 +38,8 @@ def convert_file():
             try:
                 from pdf2docx import Converter
                 cv = Converter(input_path)
-                cv.convert(output_path, start=0, end=None)
+                # Disable table parsing to prevent Out of Memory (OOM) on free 512MB RAM hosting
+                cv.convert(output_path, start=0, end=None, parse_table=False)
                 cv.close()
 
                 if os.path.exists(output_path):
