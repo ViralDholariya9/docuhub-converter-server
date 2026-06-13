@@ -25,10 +25,36 @@ def convert_file():
     if file_ext not in ['.docx', '.doc', '.xlsx', '.xls', '.pdf']:
         return jsonify({'error': f'Unsupported file format: {file_ext}'}), 400
 
-    to_format = 'pdf'
+    # If it is a PDF, convert it to DOCX using pdf2docx
     if file_ext == '.pdf':
-        to_format = 'docx'
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_path = os.path.join(temp_dir, uploaded_file.filename)
+            uploaded_file.save(input_path)
 
+            base_name = os.path.splitext(uploaded_file.filename)[0]
+            output_file_name = f"{base_name}.docx"
+            output_path = os.path.join(temp_dir, output_file_name)
+
+            try:
+                from pdf2docx import Converter
+                cv = Converter(input_path)
+                cv.convert(output_path, start=0, end=None)
+                cv.close()
+
+                if os.path.exists(output_path):
+                    return send_file(
+                        output_path,
+                        mimetype='application/octet-stream',
+                        as_attachment=True,
+                        download_name=output_file_name
+                    )
+                else:
+                    return jsonify({'error': 'Converted DOCX file not found'}), 500
+            except Exception as e:
+                return jsonify({'error': f'PDF to Word conversion failed: {str(e)}'}), 500
+
+    # Otherwise, it's Office to PDF (using LibreOffice)
+    to_format = 'pdf'
     with tempfile.TemporaryDirectory() as temp_dir:
         input_path = os.path.join(temp_dir, uploaded_file.filename)
         uploaded_file.save(input_path)
