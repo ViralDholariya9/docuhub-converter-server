@@ -3,3 +3,5 @@ gunicorn==22.0.0
 Werkzeug==3.0.3
 pdf2docx==0.5.8
 pymupdf==1.23.8
+msoffcrypto-tool==5.4.0
+
